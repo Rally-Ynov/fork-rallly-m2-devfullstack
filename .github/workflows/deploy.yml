@@ -1,18 +1,39 @@
+
 name: CD - Deploy
 
 on:
+  workflow_run:
+    workflows: ["Docker Build"]
+    types:
+      - completed
+    branches:
+      - main
+
   workflow_dispatch:
 
 permissions:
   contents: read
   packages: read
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 jobs:
-  test-runner:
-    name: Test GHCR access
+  deploy:
+    name: Deploy to VM
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: [self-hosted, Linux, X64]
 
     steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -22,6 +43,13 @@ jobs:
 
       - name: Pull Rallly image
         run: docker pull ghcr.io/rally-ynov/fork-rallly-m2-devfullstack:main
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose -f docker-compose.yml up -d --no-build --remove-orphans
+
+      - name: Show containers
+        run: docker compose -f docker-compose.yml ps
 
       - name: Logout from GHCR
         if: always()
