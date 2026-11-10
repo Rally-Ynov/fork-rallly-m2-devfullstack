@@ -51,6 +51,28 @@ jobs:
             -f docker-compose.yml \
             up -d --no-build
 
+      - name: Verify Rallly health
+        run: |
+          echo "Waiting for Rallly to respond..."
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent --output /dev/null \
+              http://127.0.0.1:3000; then
+              echo "Rallly is responding successfully!"
+              exit 0
+            fi
+
+            echo "Attempt $i/30 - retrying in 5 seconds..."
+            sleep 5
+          done
+
+          echo "Rallly did not become healthy."
+          docker compose \
+            --env-file /home/deploy/rallly-prod/.env \
+            -f docker-compose.yml \
+            ps
+          exit 1
+
       - name: Show containers
         run: |
           docker compose \
