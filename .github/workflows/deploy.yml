@@ -46,10 +46,17 @@ jobs:
 
       - name: Deploy with Docker Compose
         run: |
-          docker compose -f docker-compose.yml up -d --no-build --remove-orphans
+          docker compose \
+            --env-file /home/deploy/rallly-prod/.env \
+            -f docker-compose.yml \
+            up -d --no-build
 
       - name: Show containers
-        run: docker compose -f docker-compose.yml ps
+        run: |
+          docker compose \
+            --env-file /home/deploy/rallly-prod/.env \
+            -f docker-compose.yml \
+            ps
 
       - name: Logout from GHCR
         if: always()

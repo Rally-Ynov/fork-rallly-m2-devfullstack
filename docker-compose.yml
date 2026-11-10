@@ -25,9 +25,10 @@ services:
       - 3000:3000
     environment:
       - DATABASE_URL=postgres://postgres:postgres@rallly_db/rallly
-    env_file:
-      - path: apps/web/.env
-        required: false
+      - SECRET_PASSWORD=${SECRET_PASSWORD:?SECRET_PASSWORD manquant}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET manquant}
+      - SUPPORT_EMAIL=${SUPPORT_EMAIL:?SUPPORT_EMAIL manquant}
+      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:?NEXT_PUBLIC_BASE_URL manquant}
 
 volumes:
   db-data:
