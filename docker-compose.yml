@@ -16,11 +16,7 @@ services:
       retries: 5
 
   rallly_selfhosted:
-    build:
-      args:
-        - SELF_HOSTED=true
-      context: .
-      dockerfile: ./apps/web/Dockerfile
+    image: ghcr.io/rally-ynov/fork-rallly-m2-devfullstack:main
     restart: always
     depends_on:
       rallly_db:
@@ -29,9 +25,10 @@ services:
       - 3000:3000
     environment:
       - DATABASE_URL=postgres://postgres:postgres@rallly_db/rallly
-    env_file:
-      - path: apps/web/.env
-        required: false
+      - SECRET_PASSWORD=${SECRET_PASSWORD:?SECRET_PASSWORD manquant}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET manquant}
+      - SUPPORT_EMAIL=${SUPPORT_EMAIL:?SUPPORT_EMAIL manquant}
+      - NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL:?NEXT_PUBLIC_BASE_URL manquant}
 
 volumes:
   db-data:

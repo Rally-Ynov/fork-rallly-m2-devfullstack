@@ -1,0 +1,85 @@
+
+name: CD - Deploy
+
+on:
+  workflow_run:
+    workflows: ["Docker Build"]
+    types:
+      - completed
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to VM
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, Linux, X64]
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull Rallly image
+        run: docker pull ghcr.io/rally-ynov/fork-rallly-m2-devfullstack:main
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker compose \
+            --env-file /home/deploy/rallly-prod/.env \
+            -f docker-compose.yml \
+            up -d --no-build
+
+      - name: Verify Rallly health
+        run: |
+          echo "Waiting for Rallly to respond..."
+
+          for i in $(seq 1 30); do
+            if curl --fail --silent --output /dev/null \
+              http://127.0.0.1:3000; then
+              echo "Rallly is responding successfully!"
+              exit 0
+            fi
+
+            echo "Attempt $i/30 - retrying in 5 seconds..."
+            sleep 5
+          done
+
+          echo "Rallly did not become healthy."
+          docker compose \
+            --env-file /home/deploy/rallly-prod/.env \
+            -f docker-compose.yml \
+            ps
+          exit 1
+
+      - name: Show containers
+        run: |
+          docker compose \
+            --env-file /home/deploy/rallly-prod/.env \
+            -f docker-compose.yml \
+            ps
+
+      - name: Logout from GHCR
+        if: always()
+        run: docker logout ghcr.io
