@@ -5,6 +5,7 @@ import { MonthGrid } from "@rallly/ui/month-grid";
 import * as React from "react";
 import VoteIcon from "@/features/poll/components/vote-icon";
 import type { VoteType } from "@/features/poll/constants";
+import { ExpiredOptionLabel } from "@/features/poll/vote/components/expired-option-label";
 import {
   nextVoteType,
   useSetVote,
@@ -89,6 +90,9 @@ function OptionDayContent({
         <span aria-hidden="true" className="tabular-nums">
           {dayNumber}
         </span>
+        {ctx?.pastOptionIds.has(result.optionId) ? (
+          <ExpiredOptionLabel />
+        ) : null}
         {/* VoteIcon carries its own title, so the vote is announced
             without the cell repeating it. */}
         {shown ? <VoteIcon type={shown} size="sm" /> : null}

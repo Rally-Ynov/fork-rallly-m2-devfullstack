@@ -14,6 +14,7 @@ import * as m from "motion/react-m";
 import type * as React from "react";
 import { IfScoresVisible } from "@/features/poll/components/visibility";
 import { PollOptionVoteSummary } from "@/features/poll/components/vote-breakdown-dialog";
+import { ExpiredOptionLabel } from "@/features/poll/vote/components/expired-option-label";
 import { Trans, useTranslation } from "@/i18n/client";
 import { ConnectedScoreSummary } from "../score-summary";
 import VoteIcon from "../vote-icon";
@@ -32,6 +33,7 @@ export interface PollOptionProps {
   /** When false the segmented control offers yes and no only. */
   allowTentativeVotes?: boolean;
   disabled?: boolean;
+  expired?: boolean;
 }
 
 const PollOption: React.FunctionComponent<PollOptionProps> = ({
@@ -46,6 +48,7 @@ const PollOption: React.FunctionComponent<PollOptionProps> = ({
   ifNeedBeScore,
   allowTentativeVotes = true,
   disabled = false,
+  expired = false,
 }) => {
   const { t } = useTranslation();
   const dialog = useDialog();
@@ -71,7 +74,10 @@ const PollOption: React.FunctionComponent<PollOptionProps> = ({
       >
         {showVote ? <VoteIcon type={vote} /> : null}
       </span>
-      {children}
+      <div className="col-start-2">
+        {children}
+        {expired ? <ExpiredOptionLabel /> : null}
+      </div>
       <IfScoresVisible>
         <Button
           {...dialog.triggerProps}

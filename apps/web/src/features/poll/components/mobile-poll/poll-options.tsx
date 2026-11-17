@@ -82,6 +82,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                         duration={option.duration}
                         editable={editable}
                         disabled={isPast}
+                        expired={isPast}
                         selectedParticipantId={selectedParticipant?.id}
                       />
                     );
@@ -100,6 +101,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                         month={option.month}
                         editable={editable}
                         disabled={isPast}
+                        expired={isPast}
                         selectedParticipantId={selectedParticipant?.id}
                       />
                     );

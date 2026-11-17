@@ -798,6 +798,7 @@
   "pollDeletedTitle": "This poll has been deleted",
   "pollDeleteError": "Failed to delete poll",
   "pollNotificationsDescription": "Get notified by email when there is activity on your polls",
+  "pollOptionExpired": "Expired",
   "pollOptionsListOption": "Option",
   "pollOptionsListValue": "Value",
   "pollOverviewNoActivity": "No activity yet",

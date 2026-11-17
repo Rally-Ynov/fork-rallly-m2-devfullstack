@@ -6,6 +6,7 @@ import * as React from "react";
 import VoteIcon from "@/features/poll/components/vote-icon";
 import { VoteSegmentedControl } from "@/features/poll/components/vote-segmented-control";
 import type { VoteType } from "@/features/poll/constants";
+import { ExpiredOptionLabel } from "@/features/poll/vote/components/expired-option-label";
 import { useVote } from "@/features/poll/vote/components/vote-form";
 import { VoteScore } from "@/features/poll/vote/components/vote-score";
 import type { VoteResult, VoteViewProps } from "@/features/poll/vote/types";
@@ -116,6 +117,7 @@ function TimeOption({
           timeZone: readZone,
         })}
       </p>
+      {isPast ? <ExpiredOptionLabel /> : null}
       <div className="mt-1.5">
         <VoteScore
           optionId={result.optionId}

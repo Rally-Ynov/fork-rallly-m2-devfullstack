@@ -9,6 +9,7 @@ import { DataList } from "@/components/data-list";
 import VoteIcon from "@/features/poll/components/vote-icon";
 import { VoteSegmentedControl } from "@/features/poll/components/vote-segmented-control";
 import type { VoteType } from "@/features/poll/constants";
+import { ExpiredOptionLabel } from "@/features/poll/vote/components/expired-option-label";
 import { OptionDate } from "@/features/poll/vote/components/option-date";
 import {
   useVote,
@@ -117,22 +118,29 @@ export function VoteViewList({
       columnHelper.display({
         id: "option",
         meta: { className: "text-sm" },
-        cell: ({ row }) => (
-          // DataList owns the row element, so the option cell carries the
-          // handle tests use to find an option.
-          <span data-testid="poll-option" className="truncate">
-            {isTimeSlot ? (
-              <EventTimeRange
-                start={row.original.startTime}
-                end={endOf(row.original)}
-                allDay={false}
-                timeZone={poll.timeZone}
-              />
-            ) : (
-              <OptionDate value={row.original.startTime} />
-            )}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const result = row.original;
+          const isPast = isPollOptionPast(result, getBrowserTimeZone());
+          return (
+            // DataList owns the row element, so the option cell carries the
+            // handle tests use to find an option.
+            <span data-testid="poll-option" className="flex flex-col truncate">
+              <span>
+                {isTimeSlot ? (
+                  <EventTimeRange
+                    start={result.startTime}
+                    end={endOf(result)}
+                    allDay={false}
+                    timeZone={poll.timeZone}
+                  />
+                ) : (
+                  <OptionDate value={result.startTime} />
+                )}
+              </span>
+              {isPast ? <ExpiredOptionLabel /> : null}
+            </span>
+          );
+        },
       }),
       columnHelper.display({
         id: "votes",

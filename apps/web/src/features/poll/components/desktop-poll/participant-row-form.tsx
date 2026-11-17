@@ -13,6 +13,7 @@ import {
 import { useOptions, usePoll } from "@/features/poll/components/poll-context";
 import { useVotingForm } from "@/features/poll/components/voting-form";
 import { YouAvatar } from "@/features/poll/components/you-avatar";
+import { ExpiredOptionLabel } from "@/features/poll/vote/components/expired-option-label";
 import { isPollOptionPast } from "@/features/poll/vote/utils";
 import { Trans, useTranslation } from "@/i18n/client";
 import {
@@ -134,7 +135,9 @@ const ParticipantRowForm = ({
               control={form.control}
               name={`votes.${i}`}
               render={({ field }) => (
-                <div className={cn("flex justify-center gap-2")}>
+                <div
+                  className={cn("flex flex-col items-center justify-center")}
+                >
                   <VoteSelector
                     className="after:absolute after:inset-0"
                     optionLabel={
@@ -147,6 +150,7 @@ const ParticipantRowForm = ({
                       field.onChange({ optionId, type: vote });
                     }}
                   />
+                  {isPast ? <ExpiredOptionLabel /> : null}
                 </div>
               )}
             />
