@@ -5,6 +5,7 @@ import {
   getFinalizePlanGate,
   maskParticipantsForViewer,
   rankOptionsByPopularity,
+  shouldHideIndividualVotes,
   summarizeNotifySelection,
   toAvailabilitySpans,
 } from "./utils";
@@ -38,6 +39,7 @@ describe("maskParticipantsForViewer", () => {
       ],
       viewer: { userId: "user-1", linkedParticipantIds: ["c"] },
       hideParticipants: false,
+      hideVotesFromOtherParticipants: false,
     });
 
     expect(result.map((p) => p.note)).toEqual(["Note a", null, "Note c"]);
@@ -48,6 +50,7 @@ describe("maskParticipantsForViewer", () => {
       participants: [participant("a")],
       viewer: { userId: null, linkedParticipantIds: [] },
       hideParticipants: false,
+      hideVotesFromOtherParticipants: false,
     });
 
     expect(result).not.toHaveProperty("token");
@@ -63,6 +66,7 @@ describe("maskParticipantsForViewer", () => {
       ],
       viewer: { userId: "user-1", linkedParticipantIds: [] },
       hideParticipants: true,
+      hideVotesFromOtherParticipants: false,
     });
 
     expect(result[0]).toMatchObject({
@@ -80,6 +84,56 @@ describe("maskParticipantsForViewer", () => {
       hidden: true,
     });
     expect(result[1].votes).toEqual([{ optionId: "opt-1", type: "yes" }]);
+  });
+
+  it("hides other participants' votes but keeps the viewer's own votes", () => {
+    const result = maskParticipantsForViewer({
+      participants: [
+        participant("a", { userId: "user-1" }),
+        participant("b", { userId: "user-2" }),
+      ],
+      viewer: { userId: "user-1", linkedParticipantIds: [] },
+      hideParticipants: false,
+      hideVotesFromOtherParticipants: true,
+    });
+
+    expect(result[0].votes).toEqual([{ optionId: "opt-1", type: "yes" }]);
+    expect(result[1].votes).toEqual([]);
+  });
+});
+
+describe("shouldHideIndividualVotes", () => {
+  it("keeps other participants' votes hidden until a poll is finalized", () => {
+    expect(
+      shouldHideIndividualVotes({
+        hideVotesUntilFinalized: true,
+        status: "open",
+      }),
+    ).toBe(true);
+    expect(
+      shouldHideIndividualVotes({
+        hideVotesUntilFinalized: true,
+        status: "closed",
+      }),
+    ).toBe(true);
+    expect(
+      shouldHideIndividualVotes({
+        hideVotesUntilFinalized: true,
+        status: "canceled",
+      }),
+    ).toBe(true);
+    expect(
+      shouldHideIndividualVotes({
+        hideVotesUntilFinalized: true,
+        status: "scheduled",
+      }),
+    ).toBe(false);
+    expect(
+      shouldHideIndividualVotes({
+        hideVotesUntilFinalized: false,
+        status: "open",
+      }),
+    ).toBe(false);
   });
 });
 

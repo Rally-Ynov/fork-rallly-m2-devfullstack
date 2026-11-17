@@ -203,6 +203,11 @@ const pollSettingsFields = {
     description: "Hide vote counts from participants",
     example: false,
   }),
+  hideVotesUntilFinalized: z.boolean().optional().meta({
+    description:
+      "Hide individual participant votes from other participants until the poll is finalized",
+    example: false,
+  }),
   disableComments: z.boolean().optional().meta({
     description:
       "Disable the comments section. Defaults to true: new polls have comments disabled unless this is set to false.",
@@ -241,6 +246,7 @@ const createDatePollInputSchema = z
     requireEmail: pollSettingsFields.requireEmail,
     hideParticipants: pollSettingsFields.hideParticipants,
     hideScores: pollSettingsFields.hideScores,
+    hideVotesUntilFinalized: pollSettingsFields.hideVotesUntilFinalized,
     disableComments: pollSettingsFields.disableComments,
     allowTentativeVotes: pollSettingsFields.allowTentativeVotes,
     organizer: pollSettingsFields.organizer,
@@ -263,6 +269,7 @@ const createTimePollInputSchema = z
     requireEmail: pollSettingsFields.requireEmail,
     hideParticipants: pollSettingsFields.hideParticipants,
     hideScores: pollSettingsFields.hideScores,
+    hideVotesUntilFinalized: pollSettingsFields.hideVotesUntilFinalized,
     disableComments: pollSettingsFields.disableComments,
     allowTentativeVotes: pollSettingsFields.allowTentativeVotes,
     organizer: pollSettingsFields.organizer,
@@ -473,6 +480,11 @@ const pollSchema = z
     }),
     hideScores: z.boolean().meta({
       description: "Whether vote counts are hidden from participants",
+      example: false,
+    }),
+    hideVotesUntilFinalized: z.boolean().meta({
+      description:
+        "Whether individual votes are hidden from other participants until the poll is finalized",
       example: false,
     }),
     disableComments: z.boolean().meta({

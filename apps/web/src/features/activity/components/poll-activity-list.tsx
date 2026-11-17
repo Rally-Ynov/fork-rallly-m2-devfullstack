@@ -10,6 +10,7 @@ import {
   CalendarMinusIcon,
   CalendarPlusIcon,
   CircleStopIcon,
+  EyeOffIcon,
   GlobeIcon,
   ListChecksIcon,
   MailIcon,
@@ -162,6 +163,7 @@ const iconByChange: Record<PollChange["field"], LucideIcon> = {
   timeZone: GlobeIcon,
   hideParticipants: VenetianMaskIcon,
   hideScores: BarChart2Icon,
+  hideVotesUntilFinalized: EyeOffIcon,
   disableComments: MessageCircleIcon,
   allowTentativeVotes: ListChecksIcon,
   requireParticipantEmail: MailIcon,
@@ -181,6 +183,7 @@ function toneOfChange(change: PollChange): keyof typeof toneClassName {
     // requiring an email takes something away.
     case "hideParticipants":
     case "hideScores":
+    case "hideVotesUntilFinalized":
     case "disableComments":
     case "requireParticipantEmail":
       return change.from ? "added" : "removed";
@@ -288,6 +291,18 @@ function ChangeDescription({ change }: { change: PollChange }) {
         <Trans i18nKey="pollActivityVotesShown" defaults="Votes shown" />
       ) : (
         <Trans i18nKey="pollActivityVotesHidden" defaults="Votes hidden" />
+      );
+    case "hideVotesUntilFinalized":
+      return change.from ? (
+        <Trans
+          i18nKey="pollActivityIndividualVotesShown"
+          defaults="Individual votes shown before finalization"
+        />
+      ) : (
+        <Trans
+          i18nKey="pollActivityIndividualVotesHidden"
+          defaults="Individual votes hidden until finalization"
+        />
       );
     case "disableComments":
       return change.from ? (

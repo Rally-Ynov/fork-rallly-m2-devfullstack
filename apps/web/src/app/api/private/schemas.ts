@@ -100,6 +100,11 @@ export const createPollInputSchema = z
       description: "Hide vote counts from participants",
       example: false,
     }),
+    hideVotesUntilFinalized: z.boolean().optional().meta({
+      description:
+        "Hide individual participant votes from others until the poll is finalized",
+      example: false,
+    }),
     disableComments: z.boolean().optional().meta({
       description:
         "Disable the comments section. Defaults to true: new polls have comments disabled unless this is set to false.",

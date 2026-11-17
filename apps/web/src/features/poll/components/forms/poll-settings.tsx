@@ -21,6 +21,7 @@ import { Switch } from "@rallly/ui/switch";
 import { VoteIcon } from "@rallly/ui/vote-icon";
 import {
   BarChart2Icon,
+  EyeOffIcon,
   ListChecksIcon,
   MailIcon,
   MessageCircleIcon,
@@ -196,6 +197,36 @@ export const PollSettingsForm = ({
                       field.onChange(checked);
                     }
                   }}
+                />
+              </Field>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="hideVotesUntilFinalized"
+            render={({ field }) => (
+              <Field orientation="horizontal">
+                <SettingIcon>
+                  <EyeOffIcon />
+                </SettingIcon>
+                <FieldContent>
+                  <FieldLabel htmlFor="hide-votes-until-finalized">
+                    <Trans
+                      i18nKey="hideVotesUntilFinalizedTitle"
+                      defaults="Hide individual votes until the poll is finalized"
+                    />
+                  </FieldLabel>
+                  <FieldDescription>
+                    <Trans
+                      i18nKey="hideVotesUntilFinalizedDescription"
+                      defaults="Participants can see only their own votes until you finalize the poll. You can always see every response."
+                    />
+                  </FieldDescription>
+                </FieldContent>
+                <Switch
+                  id="hide-votes-until-finalized"
+                  checked={!!field.value}
+                  onCheckedChange={field.onChange}
                 />
               </Field>
             )}

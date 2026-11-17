@@ -11,7 +11,7 @@ vi.mock("@rallly/posthog/client", () => ({
 }));
 
 vi.mock("@/features/billing/client", () => ({
-  useIsFree: () => false,
+  useIsFree: () => true,
   showPayWall: vi.fn(),
 }));
 
@@ -19,10 +19,12 @@ function TestForm({
   enableComments = false,
   allowTentativeVotes = true,
   hasTentativeVotes = false,
+  hideVotesUntilFinalized = false,
 }: {
   enableComments?: boolean;
   allowTentativeVotes?: boolean;
   hasTentativeVotes?: boolean;
+  hideVotesUntilFinalized?: boolean;
 }) {
   const form = useForm<PollSettingsFormData>({
     defaultValues: {
@@ -31,6 +33,7 @@ function TestForm({
       requireParticipantEmail: false,
       hideParticipants: false,
       hideScores: false,
+      hideVotesUntilFinalized,
     },
   });
   return (
@@ -57,6 +60,27 @@ describe("PollSettingsForm comments setting", () => {
   it("reflects polls that already have comments enabled", () => {
     render(<TestForm enableComments={true} />);
     expect(screen.getByRole("switch", { name: /comments/i })).toBeChecked();
+  });
+});
+
+describe("PollSettingsForm anonymous votes setting", () => {
+  it("is off by default and can be enabled", async () => {
+    const user = userEvent.setup();
+    render(<TestForm />);
+    const hideVotesSwitch = screen.getByRole("switch", {
+      name: /hide individual votes/i,
+    });
+
+    expect(hideVotesSwitch).not.toBeChecked();
+    await user.click(hideVotesSwitch);
+    expect(hideVotesSwitch).toBeChecked();
+  });
+
+  it("reflects polls that already hide individual votes", () => {
+    render(<TestForm hideVotesUntilFinalized={true} />);
+    expect(
+      screen.getByRole("switch", { name: /hide individual votes/i }),
+    ).toBeChecked();
   });
 });
 

@@ -18,6 +18,7 @@ export type PollDetails = {
   disableComments: boolean;
   allowTentativeVotes: boolean;
   hideScores: boolean;
+  hideVotesUntilFinalized: boolean;
   requireParticipantEmail: boolean;
   muted: boolean;
   timeZone: string | null;

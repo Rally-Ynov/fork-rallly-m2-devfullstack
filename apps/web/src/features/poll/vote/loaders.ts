@@ -7,6 +7,7 @@ import {
   getPollDetails,
   listParticipantIdsByToken,
 } from "@/features/poll/data";
+import { shouldHideIndividualVotes } from "@/features/poll/utils";
 import {
   countParticipants,
   getOptionScores,
@@ -17,8 +18,8 @@ import { getSession } from "@/lib/auth";
 
 /**
  * Everything the vote page renders, in one read, with visibility already
- * resolved: a hidden score is absent from the result rather than filtered
- * on the client, and the viewer's single response is chosen here.
+ * resolved: hidden results are absent rather than filtered on the client,
+ * and the viewer's single response is chosen here.
  */
 export const loadVotePage = cache(
   async ({
@@ -47,20 +48,28 @@ export const loadVotePage = cache(
       participantIds,
     });
 
+    const votesHiddenUntilFinalized = shouldHideIndividualVotes({
+      hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
+      status: poll.status,
+    });
+
     const [response, scores, participantCount] = await Promise.all([
       responsePromise,
       // Scores stay hidden until the viewer has responded, so they are not
       // read at all when they cannot be shown.
-      poll.hideScores
-        ? responsePromise.then((found) =>
-            found ? getOptionScores({ pollId }) : null,
-          )
-        : getOptionScores({ pollId }),
+      votesHiddenUntilFinalized
+        ? Promise.resolve(null)
+        : poll.hideScores
+          ? responsePromise.then((found) =>
+              found ? getOptionScores({ pollId }) : null,
+            )
+          : getOptionScores({ pollId }),
       countParticipants({ pollId }),
     ]);
 
     // hideScores reveals the tally only once the viewer has responded.
-    const scoresVisible = !poll.hideScores || response !== null;
+    const scoresVisible =
+      !votesHiddenUntilFinalized && (!poll.hideScores || response !== null);
 
     return {
       poll: {
