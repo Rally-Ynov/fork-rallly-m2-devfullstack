@@ -113,6 +113,7 @@ function toPollResponseBody(poll: {
   requireParticipantEmail: boolean;
   hideParticipants: boolean;
   hideScores: boolean;
+  hideVotesUntilFinalized: boolean;
   disableComments: boolean;
   allowTentativeVotes: boolean;
   participantCount: number;
@@ -147,6 +148,7 @@ function toPollResponseBody(poll: {
       requireEmail: poll.requireParticipantEmail,
       hideParticipants: poll.hideParticipants,
       hideScores: poll.hideScores,
+      hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
       disableComments: poll.disableComments,
       allowTentativeVotes: poll.allowTentativeVotes,
       participantCount: poll.participantCount,
@@ -578,6 +580,7 @@ app.post(
             requireParticipantEmail: input.requireEmail,
             hideParticipants: input.hideParticipants,
             hideScores: input.hideScores,
+            hideVotesUntilFinalized: input.hideVotesUntilFinalized,
             disableComments: poll.disableComments,
             allowTentativeVotes: poll.allowTentativeVotes,
             isGuest: false,
@@ -618,6 +621,7 @@ app.post(
         requireParticipantEmail: input.requireEmail,
         hideParticipants: input.hideParticipants,
         hideScores: input.hideScores,
+        hideVotesUntilFinalized: input.hideVotesUntilFinalized,
         disableComments: input.disableComments,
         allowTentativeVotes: input.allowTentativeVotes,
         options,
@@ -690,6 +694,7 @@ app.post(
       requireParticipantEmail: input.requireEmail,
       hideParticipants: input.hideParticipants,
       hideScores: input.hideScores,
+      hideVotesUntilFinalized: input.hideVotesUntilFinalized,
       disableComments: input.disableComments,
       allowTentativeVotes: input.allowTentativeVotes,
       options,

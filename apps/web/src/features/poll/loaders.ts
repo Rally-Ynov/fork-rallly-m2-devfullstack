@@ -20,6 +20,7 @@ import { getPollInvitePath } from "@/features/poll/invite/utils";
 import {
   filterCommentsForViewer,
   maskParticipantsForViewer,
+  shouldHideIndividualVotes,
 } from "@/features/poll/utils";
 import { loadActiveSpaceContentScope } from "@/features/space/loaders";
 import { getUser } from "@/features/user/data";
@@ -189,6 +190,10 @@ export const loadInvitePoll = cache(
         participants,
         viewer,
         hideParticipants: poll.hideParticipants,
+        hideVotesFromOtherParticipants: shouldHideIndividualVotes({
+          hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
+          status: poll.status,
+        }),
       }),
       comments: filterCommentsForViewer({
         comments,

@@ -213,6 +213,7 @@ export const polls = router({
           .optional(),
         hideParticipants: z.boolean().optional(),
         hideScores: z.boolean().optional(),
+        hideVotesUntilFinalized: z.boolean().optional(),
         disableComments: z.boolean().optional(),
         allowTentativeVotes: z.boolean().optional(),
         requireParticipantEmail: z.boolean().optional(),
@@ -344,6 +345,7 @@ export const polls = router({
             disableComments: input.disableComments,
             allowTentativeVotes: input.allowTentativeVotes,
             hideScores: input.hideScores,
+            hideVotesUntilFinalized: input.hideVotesUntilFinalized,
             requireParticipantEmail: input.requireParticipantEmail,
             spaceId,
           },
@@ -422,6 +424,7 @@ export const polls = router({
           allowTentativeVotes: poll.allowTentativeVotes,
           hideParticipants: poll.hideParticipants,
           hideScores: poll.hideScores,
+          hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
           requireParticipantEmail: poll.requireParticipantEmail,
           isGuest: ctx.user.isGuest,
         },
@@ -454,6 +457,7 @@ export const polls = router({
         disableComments: z.boolean().optional(),
         allowTentativeVotes: z.boolean().optional(),
         hideScores: z.boolean().optional(),
+        hideVotesUntilFinalized: z.boolean().optional(),
         requireParticipantEmail: z.boolean().optional(),
       }),
     )
@@ -581,6 +585,7 @@ export const polls = router({
             timeZone: true,
             hideParticipants: true,
             hideScores: true,
+            hideVotesUntilFinalized: true,
             disableComments: true,
             allowTentativeVotes: true,
             requireParticipantEmail: true,
@@ -692,6 +697,7 @@ export const polls = router({
             timeZone: kind === "time" ? input.timeZone : null,
             hideScores: input.hideScores,
             hideParticipants: input.hideParticipants,
+            hideVotesUntilFinalized: input.hideVotesUntilFinalized,
             disableComments: input.disableComments,
             allowTentativeVotes: input.allowTentativeVotes,
             requireParticipantEmail: input.requireParticipantEmail,
@@ -726,6 +732,7 @@ export const polls = router({
             timeZone: prior.timeZone,
             hideParticipants: prior.hideParticipants,
             hideScores: prior.hideScores,
+            hideVotesUntilFinalized: prior.hideVotesUntilFinalized,
             disableComments: prior.disableComments,
             allowTentativeVotes: prior.allowTentativeVotes,
             requireParticipantEmail: prior.requireParticipantEmail,
@@ -738,6 +745,7 @@ export const polls = router({
             timeZone: nextTimeZone,
             hideParticipants: input.hideParticipants,
             hideScores: input.hideScores,
+            hideVotesUntilFinalized: input.hideVotesUntilFinalized,
             disableComments: input.disableComments,
             allowTentativeVotes: input.allowTentativeVotes,
             requireParticipantEmail: input.requireParticipantEmail,
@@ -810,6 +818,7 @@ export const polls = router({
           requireParticipantEmail: true,
           hideParticipants: true,
           hideScores: true,
+          hideVotesUntilFinalized: true,
           timeZone: true,
           muted: true,
           _count: {
@@ -859,6 +868,7 @@ export const polls = router({
         input.disableComments !== undefined ||
         input.allowTentativeVotes !== undefined ||
         input.hideScores !== undefined ||
+        input.hideVotesUntilFinalized !== undefined ||
         input.requireParticipantEmail !== undefined;
 
       if (hasDetailsUpdate) {
@@ -896,6 +906,7 @@ export const polls = router({
             allow_tentative_votes: !!updatedPoll.allowTentativeVotes,
             hide_participants: !!updatedPoll.hideParticipants,
             hide_scores: !!updatedPoll.hideScores,
+            hide_votes_until_finalized: !!updatedPoll.hideVotesUntilFinalized,
             require_participant_email: !!updatedPoll.requireParticipantEmail,
           },
           groups: {
@@ -1646,6 +1657,7 @@ export const polls = router({
           timeZone: true,
           hideParticipants: true,
           hideScores: true,
+          hideVotesUntilFinalized: true,
           requireParticipantEmail: true,
           disableComments: true,
           allowTentativeVotes: true,
@@ -1692,6 +1704,7 @@ export const polls = router({
             description: poll.description,
             hideParticipants: poll.hideParticipants,
             hideScores: poll.hideScores,
+            hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
             disableComments: poll.disableComments,
             allowTentativeVotes: poll.allowTentativeVotes,
             kind: poll.kind,

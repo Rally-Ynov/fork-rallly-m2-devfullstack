@@ -274,6 +274,7 @@ export async function listPolls({
       requireParticipantEmail: true,
       hideParticipants: true,
       hideScores: true,
+      hideVotesUntilFinalized: true,
       disableComments: true,
       allowTentativeVotes: true,
       user: {
@@ -629,6 +630,7 @@ export async function getPollWithOptions({
       requireParticipantEmail: true,
       hideParticipants: true,
       hideScores: true,
+      hideVotesUntilFinalized: true,
       disableComments: true,
       allowTentativeVotes: true,
       user: {
@@ -735,6 +737,7 @@ export async function getPollDetails({
       disableComments: true,
       allowTentativeVotes: true,
       hideScores: true,
+      hideVotesUntilFinalized: true,
       requireParticipantEmail: true,
       muted: true,
       userId: true,

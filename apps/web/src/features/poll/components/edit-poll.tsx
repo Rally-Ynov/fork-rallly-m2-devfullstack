@@ -90,6 +90,7 @@ function getDefaultValues(poll: PollDetails): NewEventData {
     duration: poll.options[0]?.duration || 60,
     hideParticipants: poll.hideParticipants,
     hideScores: poll.hideScores,
+    hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
     enableComments: !poll.disableComments,
     allowTentativeVotes: poll.allowTentativeVotes,
     requireParticipantEmail: poll.requireParticipantEmail,
@@ -163,6 +164,7 @@ const detailFields = [
 const settingFields = [
   "hideParticipants",
   "hideScores",
+  "hideVotesUntilFinalized",
   "enableComments",
   "allowTentativeVotes",
   "requireParticipantEmail",
@@ -231,6 +233,7 @@ export function EditPoll({
     if (settingsChanged) {
       input.hideParticipants = data.hideParticipants;
       input.hideScores = data.hideScores;
+      input.hideVotesUntilFinalized = data.hideVotesUntilFinalized;
       input.disableComments = !data.enableComments;
       input.allowTentativeVotes = data.allowTentativeVotes;
       input.requireParticipantEmail = data.requireParticipantEmail;

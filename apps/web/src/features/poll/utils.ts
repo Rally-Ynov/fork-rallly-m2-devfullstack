@@ -2,6 +2,7 @@ import { customAlphabet } from "nanoid";
 import type { PollConferencing } from "@/features/conferencing/schema";
 import { isProConferencingProvider } from "@/features/conferencing/utils";
 import type { VoteType } from "@/features/poll/constants";
+import type { PollStatus } from "@/features/poll/schema";
 import type { PollComment, PollParticipant } from "@/features/poll/types";
 import type { SpaceTier } from "@/features/space/schema";
 
@@ -31,6 +32,16 @@ export function filterParticipantsByVote<
   });
 }
 
+export function shouldHideIndividualVotes({
+  hideVotesUntilFinalized,
+  status,
+}: {
+  hideVotesUntilFinalized: boolean;
+  status: PollStatus;
+}) {
+  return hideVotesUntilFinalized && status !== "scheduled";
+}
+
 type RawParticipant = Omit<PollParticipant, "hidden" | "editUrl"> & {
   token: string;
 };
@@ -39,17 +50,19 @@ type RawParticipant = Omit<PollParticipant, "hidden" | "editUrl"> & {
  * Scopes the response list to a viewer who is not the host. Notes are for
  * the host and their author only, so they survive only on the viewer's own
  * responses: the ones their session created, or the one the emailed link
- * they opened names. With hidden participants, everyone else's identity is
- * withheld while their votes still count.
+ * they opened names. Hidden identities and votes are removed before the
+ * response reaches the participant page.
  */
 export function maskParticipantsForViewer({
   participants,
   viewer,
   hideParticipants,
+  hideVotesFromOtherParticipants,
 }: {
   participants: RawParticipant[];
   viewer: { userId: string | null; linkedParticipantIds: string[] };
   hideParticipants: boolean;
+  hideVotesFromOtherParticipants: boolean;
 }): PollParticipant[] {
   const linkedIds = new Set(viewer.linkedParticipantIds);
   const isOwn = (participant: { id: string; userId: string | null }) =>
@@ -57,12 +70,17 @@ export function maskParticipantsForViewer({
     (!!viewer.userId && participant.userId === viewer.userId);
 
   return participants.map(({ token: _token, ...participant }) => {
-    if (isOwn(participant)) {
-      return { ...participant, hidden: false, editUrl: null };
+    const ownResponse = isOwn(participant);
+    const votes =
+      hideVotesFromOtherParticipants && !ownResponse ? [] : participant.votes;
+
+    if (ownResponse) {
+      return { ...participant, votes, hidden: false, editUrl: null };
     }
     if (hideParticipants) {
       return {
         ...participant,
+        votes,
         userId: null,
         name: "",
         email: null,
@@ -72,7 +90,13 @@ export function maskParticipantsForViewer({
         editUrl: null,
       };
     }
-    return { ...participant, note: null, hidden: false, editUrl: null };
+    return {
+      ...participant,
+      votes,
+      note: null,
+      hidden: false,
+      editUrl: null,
+    };
   });
 }
 

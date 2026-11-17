@@ -2,7 +2,7 @@ import type { PollConferencing } from "@/features/conferencing/schema";
 import type { VoteType } from "@/features/poll/constants";
 import type { PollClosedReason, PollStatus } from "@/features/poll/schema";
 
-/** One option with its tally. `score` is null when the poll hides scores. */
+/** One option with its tally. `score` is null when results are hidden. */
 export type VoteResult = {
   optionId: string;
   startTime: Date;
@@ -20,8 +20,9 @@ export type VoteResponse = {
 
 /**
  * Everything the vote page renders, with visibility already resolved: a
- * hidden score is absent rather than filtered client side, and the viewer's
- * response is chosen here rather than derived from a participant list.
+ * hidden results are absent rather than filtered client side, and the
+ * viewer's response is chosen here rather than derived from a participant
+ * list.
  */
 export type VotePageView = {
   poll: {
@@ -54,7 +55,7 @@ export type VotePageView = {
     } | null;
   };
   results: VoteResult[];
-  /** Denominator for the per-option tallies; null when scores are hidden. */
+  /** Denominator for the per-option tallies; null when results are hidden. */
   participantCount: number | null;
   response: VoteResponse | null;
   /** False once the poll is closed or scheduled. */

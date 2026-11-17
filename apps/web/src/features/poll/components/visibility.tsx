@@ -8,6 +8,7 @@ import {
   usePermissions,
   usePoll,
 } from "@/features/poll/client";
+import { shouldHideIndividualVotes } from "@/features/poll/utils";
 
 export const IfScoresVisible = (props: React.PropsWithChildren) => {
   const context = React.useContext(VisibilityContext);
@@ -25,23 +26,25 @@ export const useVisibility = () => {
 
 const VisibilityContext = React.createContext<{
   canSeeScores: boolean;
+  canSeeParticipants: boolean;
 }>({
   canSeeScores: true,
+  canSeeParticipants: true,
 });
 
 export const useVisibleParticipants = () => {
-  const { canSeeScores } = useVisibility();
+  const { canSeeParticipants } = useVisibility();
   const { canEditParticipant } = usePermissions();
   const { participants } = useParticipants();
 
   const filteredParticipants = React.useMemo(() => {
-    if (!canSeeScores) {
+    if (!canSeeParticipants) {
       return participants.filter((participant) =>
         canEditParticipant(participant.id),
       );
     }
     return participants;
-  }, [canEditParticipant, canSeeScores, participants]);
+  }, [canEditParticipant, canSeeParticipants, participants]);
 
   return filteredParticipants;
 };
@@ -54,12 +57,19 @@ export const VisibilityProvider = ({ children }: React.PropsWithChildren) => {
     return canEditParticipant(participant.id);
   });
 
-  const canSeeScores = poll.hideScores ? userAlreadyVoted : true;
+  const canSeeParticipants = !poll.hideScores || userAlreadyVoted;
+  const canSeeScores =
+    canSeeParticipants &&
+    !shouldHideIndividualVotes({
+      hideVotesUntilFinalized: poll.hideVotesUntilFinalized,
+      status: poll.status,
+    });
 
   return (
     <VisibilityContext.Provider
       value={{
         canSeeScores,
+        canSeeParticipants,
       }}
     >
       {children}
