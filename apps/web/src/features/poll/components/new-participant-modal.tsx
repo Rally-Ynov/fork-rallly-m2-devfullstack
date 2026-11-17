@@ -39,6 +39,7 @@ import { MAX_RESPONSE_NOTE_LENGTH } from "@/features/poll/schema";
 import { useUser } from "@/features/user/client";
 import { Trans, useTranslation } from "@/i18n/client";
 import { useDateTimeConfig } from "@/lib/datetime/client";
+import { getBrowserTimeZone } from "@/lib/utils/date-time-utils";
 
 const requiredEmailSchema = z.object({
   requireEmail: z.literal(true),
@@ -162,6 +163,11 @@ export const NewParticipantForm = (props: NewParticipantModalProps) => {
         return t("newParticipantFormErrorPollFull", {
           defaultValue: "This poll is no longer accepting responses.",
         });
+      case "pastOptions":
+        return t("pollPastOptionsError", {
+          defaultValue:
+            "Past dates and times can no longer be selected. Please update your response.",
+        });
       case "tooManyRequests":
         return t("newParticipantFormErrorTooManyRequests", {
           defaultValue:
@@ -279,6 +285,7 @@ export const NewParticipantForm = (props: NewParticipantModalProps) => {
               note: data.note,
               pollId,
               timeZone,
+              viewerTimeZone: getBrowserTimeZone(),
               token,
             });
             if (!result.ok) {

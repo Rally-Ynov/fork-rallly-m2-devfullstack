@@ -17,6 +17,7 @@ import {
 } from "@/features/poll/components/mutations";
 import { NewParticipantForm } from "@/features/poll/components/new-participant-modal";
 import { useTranslation } from "@/i18n/client";
+import { getBrowserTimeZone } from "@/lib/utils/date-time-utils";
 
 const formSchema = z.object({
   mode: z.enum(["new", "edit", "view"]),
@@ -121,6 +122,7 @@ export const VotingForm = ({ children }: React.PropsWithChildren) => {
               participantId: data.participantId,
               votes: normalizeVotes(optionIds, data.votes),
               token,
+              viewerTimeZone: getBrowserTimeZone(),
             });
 
             if (!result.ok) {
@@ -130,9 +132,14 @@ export const VotingForm = ({ children }: React.PropsWithChildren) => {
                   ? t("pollClosedDescription", {
                       defaultValue: "No more responses are being accepted.",
                     })
-                  : t("actionErrorInternalServerError", {
-                      defaultValue: "An internal server error occurred",
-                    }),
+                  : result.reason === "pastOptions"
+                    ? t("pollPastOptionsError", {
+                        defaultValue:
+                          "Past dates and times can no longer be selected. Please update your response.",
+                      })
+                    : t("actionErrorInternalServerError", {
+                        defaultValue: "An internal server error occurred",
+                      }),
               );
               return;
             }

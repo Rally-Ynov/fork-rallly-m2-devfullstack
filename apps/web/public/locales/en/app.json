@@ -805,6 +805,7 @@
   "pollOverviewRecentActivity": "Recent activity",
   "pollOverviewRecentResponses": "Recent responses",
   "pollOverviewViewAll": "View all",
+  "pollPastOptionsError": "Past dates and times can no longer be selected. Please update your response.",
   "pollRemovedDescription": "It violated our terms of use and is no longer available.",
   "pollRemovedTitle": "This poll has been removed",
   "pollRemovedWarningDescription": "Treat the message that sent you here as suspicious. Do not call phone numbers, follow links, or send money or personal details in response to it.",

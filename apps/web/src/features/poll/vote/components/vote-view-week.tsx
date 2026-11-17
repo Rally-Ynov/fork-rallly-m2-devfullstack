@@ -9,6 +9,7 @@ import type { VoteType } from "@/features/poll/constants";
 import { useVote } from "@/features/poll/vote/components/vote-form";
 import { VoteScore } from "@/features/poll/vote/components/vote-score";
 import type { VoteResult, VoteViewProps } from "@/features/poll/vote/types";
+import { isPollOptionPast } from "@/features/poll/vote/utils";
 import { Trans, useTranslation } from "@/i18n/client";
 import { useDateTime, useDateTimeConfig } from "@/lib/datetime/client";
 import { getLocaleDefaults } from "@/lib/datetime/locales";
@@ -80,22 +81,22 @@ function buildWeeks(
 
 function TimeOption({
   result,
-  timeZone,
   readZone,
   savedVote,
   participantCount,
   hasSavedResponse,
   allowTentativeVotes,
   canVote,
+  isPast,
 }: {
   result: VoteResult;
-  timeZone: string | null;
   readZone: string | undefined;
   savedVote: VoteType | undefined;
   participantCount: number | null;
   hasSavedResponse: boolean;
   allowTentativeVotes: boolean;
   canVote: boolean;
+  isPast: boolean;
 }) {
   const { formatDateTime, formatDateTimeRange } = useDateTime();
   const { value, setVote, isEditing } = useVote(result.optionId);
@@ -131,6 +132,7 @@ function TimeOption({
           <VoteSegmentedControl
             value={value}
             onChange={setVote}
+            disabled={isPast}
             optionLabel={label}
             allowTentativeVotes={allowTentativeVotes}
             className="w-full"
@@ -294,13 +296,13 @@ export function VoteViewWeek({
                     <TimeOption
                       key={result.optionId}
                       result={result}
-                      timeZone={poll.timeZone}
                       readZone={readZone}
                       savedVote={savedVotes.get(result.optionId)}
                       participantCount={participantCount}
                       hasSavedResponse={response !== null}
                       allowTentativeVotes={poll.allowTentativeVotes}
                       canVote={canVote}
+                      isPast={isPollOptionPast(result, getBrowserTimeZone())}
                     />
                   ))}
                 </ul>

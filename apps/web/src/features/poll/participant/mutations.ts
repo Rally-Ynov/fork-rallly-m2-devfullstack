@@ -10,10 +10,16 @@ import {
 } from "@/features/poll/invite/mutations";
 import { revalidatePollPages } from "@/features/poll/mutations";
 import { generateAccessToken } from "@/features/poll/utils";
+import { hasNewPastAvailability } from "@/features/poll/vote/utils";
 import type { SpaceTier } from "@/features/space/schema";
 import { scheduleWebhookDispatch } from "@/features/webhook/mutations";
 
-type WriteRefusal = "notFound" | "closed" | "full" | "tentativeVotesNotAllowed";
+type WriteRefusal =
+  | "notFound"
+  | "closed"
+  | "full"
+  | "tentativeVotesNotAllowed"
+  | "pastOptions";
 
 class WriteRefusedError extends Error {
   constructor(public readonly reason: WriteRefusal) {
@@ -81,15 +87,11 @@ async function assertParticipantInPoll(
   }
 }
 
-async function listValidOptionIds(
-  tx: Prisma.TransactionClient,
-  pollId: string,
-) {
-  const options = await tx.option.findMany({
+async function listPollOptions(tx: Prisma.TransactionClient, pollId: string) {
+  return tx.option.findMany({
     where: { pollId },
-    select: { id: true },
+    select: { id: true, startTime: true, duration: true },
   });
-  return new Set(options.map((option) => option.id));
 }
 
 function refusal(error: unknown) {
@@ -137,6 +139,7 @@ export async function addParticipant({
   timeZone,
   token,
   votes,
+  viewerTimeZone,
 }: {
   pollId: string;
   userId: string;
@@ -147,6 +150,7 @@ export async function addParticipant({
   timeZone?: string;
   token?: string;
   votes: { optionId: string; type: VoteType }[];
+  viewerTimeZone: string;
 }): Promise<AddParticipantResult> {
   const poll = await prisma.poll.findUnique({
     where: { id: pollId },
@@ -163,12 +167,22 @@ export async function addParticipant({
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      const validOptionIds = await listValidOptionIds(tx, pollId);
+      const options = await listPollOptions(tx, pollId);
+      const validOptionIds = new Set(options.map((option) => option.id));
       const validVotes = votes.filter(({ optionId }) =>
         validOptionIds.has(optionId),
       );
 
       await lockOpenPoll(tx, pollId, validVotes);
+      if (
+        hasNewPastAvailability({
+          votes: validVotes,
+          options,
+          timeZone: viewerTimeZone,
+        })
+      ) {
+        throw new WriteRefusedError("pastOptions");
+      }
 
       // Counted under the lock so two responses cannot both pass at the cap.
       const participantCount = await tx.participant.count({
@@ -280,23 +294,43 @@ export async function updateParticipantVotes({
   pollId,
   actorUserId,
   votes,
+  viewerTimeZone,
 }: {
   participantId: string;
   pollId: string;
   actorUserId: string | undefined;
   votes: { optionId: string; type: VoteType }[];
+  viewerTimeZone: string;
 }): Promise<EditParticipantResult> {
   try {
     await prisma.$transaction(async (tx) => {
       await lockOpenPoll(tx, pollId, votes);
       await assertParticipantInPoll(tx, participantId, pollId);
 
-      await tx.vote.deleteMany({ where: { participantId } });
-
-      const validOptionIds = await listValidOptionIds(tx, pollId);
+      const options = await listPollOptions(tx, pollId);
+      const validOptionIds = new Set(options.map((option) => option.id));
       const validVotes = votes.filter(({ optionId }) =>
         validOptionIds.has(optionId),
       );
+      const existingVotes = await tx.vote.findMany({
+        where: { pollId, participantId },
+        select: { optionId: true, type: true },
+      });
+
+      if (
+        hasNewPastAvailability({
+          votes: validVotes,
+          options,
+          existingVotes: new Map(
+            existingVotes.map((vote) => [vote.optionId, vote.type]),
+          ),
+          timeZone: viewerTimeZone,
+        })
+      ) {
+        throw new WriteRefusedError("pastOptions");
+      }
+
+      await tx.vote.deleteMany({ where: { participantId } });
 
       await tx.vote.createMany({
         data: validVotes.map(({ optionId, type }) => ({

@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { MAX_RESPONSE_NOTE_LENGTH } from "@/features/poll/schema";
+import { normalizeTimeZone } from "@/lib/datetime/utils";
 
 // Whitespace-only notes collapse to undefined so no empty string is persisted.
 export const responseNoteInput = z
@@ -16,6 +17,10 @@ const voteInput = z.object({
   type: z.enum(["yes", "no", "ifNeedBe"]),
 });
 
+const viewerTimeZoneInput = z
+  .string()
+  .refine((timeZone) => normalizeTimeZone(timeZone) !== undefined);
+
 export type VoteInput = z.infer<typeof voteInput>;
 
 export const addParticipantSchema = z.object({
@@ -30,6 +35,7 @@ export const addParticipantSchema = z.object({
     .pipe(z.email().optional()),
   note: responseNoteInput,
   timeZone: z.string().optional(),
+  viewerTimeZone: viewerTimeZoneInput,
   // The token from an emailed invite link; the response takes it over.
   token: z.string().optional(),
   votes: voteInput.array(),
@@ -39,6 +45,7 @@ export const updateParticipantVotesSchema = z.object({
   participantId: z.string(),
   votes: voteInput.array(),
   token: z.string().optional(),
+  viewerTimeZone: viewerTimeZoneInput,
 });
 
 export const renameParticipantSchema = z.object({

@@ -17,11 +17,13 @@ export const VoteSegmentedControl = ({
   onChange,
   optionLabel,
   allowTentativeVotes = true,
+  disabled = false,
   className,
 }: {
   value?: VoteType;
   onChange: (value: VoteType) => void;
   className?: string;
+  disabled?: boolean;
   /** When false only yes and no are offered. */
   allowTentativeVotes?: boolean;
   /**
@@ -57,6 +59,7 @@ export const VoteSegmentedControl = ({
         <SegmentedControlItem
           key={type}
           value={type}
+          disabled={disabled}
           aria-label={voteLabels[type]}
           className="w-11 sm:w-9 data-unchecked:[&_svg]:text-gray-400 dark:data-unchecked:[&_svg]:text-gray-600"
         >

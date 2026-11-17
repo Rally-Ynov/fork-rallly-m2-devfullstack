@@ -178,7 +178,16 @@ export const addParticipantAction = anyUserActionClient
   .use(createRateLimitMiddleware(10, "1 h"))
   .inputSchema(addParticipantSchema)
   .action(async ({ ctx, parsedInput }) => {
-    const { pollId, votes, name, email, note, timeZone, token } = parsedInput;
+    const {
+      pollId,
+      votes,
+      name,
+      email,
+      note,
+      timeZone,
+      viewerTimeZone,
+      token,
+    } = parsedInput;
     const locale = await getLocale();
 
     const result = await addParticipant({
@@ -191,6 +200,7 @@ export const addParticipantAction = anyUserActionClient
       timeZone,
       token,
       votes,
+      viewerTimeZone,
     });
 
     if (!result.ok) {
@@ -267,7 +277,7 @@ export const updateParticipantVotesAction = optionalUserActionClient
   .metadata({ actionName: "update_participant_votes" })
   .inputSchema(updateParticipantVotesSchema)
   .action(async ({ ctx, parsedInput }) => {
-    const { participantId, votes, token } = parsedInput;
+    const { participantId, votes, token, viewerTimeZone } = parsedInput;
 
     const authorization = await authorizeParticipantEdit({
       participantId,
@@ -286,6 +296,7 @@ export const updateParticipantVotesAction = optionalUserActionClient
       pollId: participant.pollId,
       actorUserId: actor?.id,
       votes,
+      viewerTimeZone,
     });
 
     if (result.ok && actor) {

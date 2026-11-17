@@ -14,11 +14,13 @@ import {
 } from "@/features/poll/vote/components/vote-form";
 import { VoteScore } from "@/features/poll/vote/components/vote-score";
 import type { VoteResult, VoteViewProps } from "@/features/poll/vote/types";
+import { isPollOptionPast } from "@/features/poll/vote/utils";
 import { useTranslation } from "@/i18n/client";
 import { useDateTimeConfig } from "@/lib/datetime/client";
 import { getLocaleDefaults } from "@/lib/datetime/locales";
 import { useHydrated } from "@/lib/datetime/use-hydrated";
 import { toISODate } from "@/lib/datetime/utils";
+import { getBrowserTimeZone } from "@/lib/utils/date-time-utils";
 
 /**
  * The tint each vote gives its day, applied through DayPicker's modifiers.
@@ -63,6 +65,7 @@ type DayContext = {
   hasSavedResponse: boolean;
   allowTentativeVotes: boolean;
   canVote: boolean;
+  pastOptionIds: Set<string>;
 };
 
 const DayContextValue = React.createContext<DayContext | null>(null);
@@ -110,7 +113,11 @@ function OptionDayContent({
 function DayCell({ day, modifiers, className, ...props }: MonthGridDayProps) {
   const ctx = React.useContext(DayContextValue);
   const result = ctx?.byDate.get(toISODate(day.date));
-  const interactive = result !== undefined && (ctx?.canVote ?? false);
+  const isPast = result
+    ? (ctx?.pastOptionIds.has(result.optionId) ?? false)
+    : false;
+  const interactive =
+    result !== undefined && (ctx?.canVote ?? false) && !isPast;
 
   return (
     <button
@@ -125,6 +132,7 @@ function DayCell({ day, modifiers, className, ...props }: MonthGridDayProps) {
         className,
       )}
       {...props}
+      disabled={isPast || props.disabled}
     >
       {result ? (
         <OptionDayContent result={result} dayNumber={props.children} />
@@ -168,6 +176,15 @@ export function VoteViewCalendar({
     }
     return map;
   }, [results]);
+  const pastOptionIds = React.useMemo(
+    () =>
+      new Set(
+        results
+          .filter((result) => isPollOptionPast(result, getBrowserTimeZone()))
+          .map((result) => result.optionId),
+      ),
+    [results],
+  );
 
   const { first, last } = React.useMemo(
     () => getMonthRange(results),
@@ -200,14 +217,19 @@ export function VoteViewCalendar({
       const result = byDate.get(toISODate(date));
       // Read the mode at click time: DayPicker holds on to this handler, so
       // a captured value would go stale the moment the response is saved.
-      if (!result || !canVote || form.getValues("mode") === "view") {
+      if (
+        !result ||
+        pastOptionIds.has(result.optionId) ||
+        !canVote ||
+        form.getValues("mode") === "view"
+      ) {
         return;
       }
       setVote(result.optionId, (current) =>
         nextVoteType(current, poll.allowTentativeVotes),
       );
     },
-    [byDate, canVote, form, setVote, poll.allowTentativeVotes],
+    [byDate, canVote, form, pastOptionIds, setVote, poll.allowTentativeVotes],
   );
 
   const ctx = React.useMemo(
@@ -218,6 +240,7 @@ export function VoteViewCalendar({
       hasSavedResponse: response !== null,
       allowTentativeVotes: poll.allowTentativeVotes,
       canVote,
+      pastOptionIds,
     }),
     [
       byDate,
@@ -226,6 +249,7 @@ export function VoteViewCalendar({
       response,
       poll.allowTentativeVotes,
       canVote,
+      pastOptionIds,
     ],
   );
 

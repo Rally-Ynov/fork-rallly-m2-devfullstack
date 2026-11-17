@@ -16,6 +16,7 @@ import {
 } from "@/features/poll/vote/components/vote-form";
 import { VoteScore } from "@/features/poll/vote/components/vote-score";
 import type { VoteResult, VoteViewProps } from "@/features/poll/vote/types";
+import { isPollOptionPast } from "@/features/poll/vote/utils";
 import { EventTimeRange } from "@/features/scheduled-event/components/event-date-time";
 import { Trans } from "@/i18n/client";
 import { CalendarDate } from "@/lib/datetime/calendar-date";
@@ -24,6 +25,7 @@ import {
   calendarDateToUTCMidnight,
   getCalendarDate,
 } from "@/lib/datetime/utils";
+import { getBrowserTimeZone } from "@/lib/utils/date-time-utils";
 
 /** A recorded vote: icon only, with the vote type for screen readers. */
 function VoteLabel({ type }: { type?: VoteType }) {
@@ -58,12 +60,14 @@ function VoteCell({
   allowTentativeVotes,
   savedVote,
   canVote,
+  isPast,
 }: {
   optionId: string;
   optionLabel: string;
   allowTentativeVotes: boolean;
   savedVote?: VoteType;
   canVote: boolean;
+  isPast: boolean;
 }) {
   const { value, setVote, isEditing } = useVote(optionId);
 
@@ -74,6 +78,7 @@ function VoteCell({
     <VoteSegmentedControl
       value={value}
       onChange={setVote}
+      disabled={isPast}
       optionLabel={optionLabel}
       allowTentativeVotes={allowTentativeVotes}
     />
@@ -150,6 +155,7 @@ export function VoteViewList({
         meta: { className: "justify-end" },
         cell: ({ row }) => {
           const result = row.original;
+          const isPast = isPollOptionPast(result, getBrowserTimeZone());
           const optionLabel = isTimeSlot
             ? `${formatDateTime(result.startTime, "dateFull", {
                 timeZone: readZone,
@@ -169,6 +175,7 @@ export function VoteViewList({
               allowTentativeVotes={poll.allowTentativeVotes}
               savedVote={savedVotes.get(result.optionId)}
               canVote={canVote}
+              isPast={isPast}
             />
           );
         },

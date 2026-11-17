@@ -35,6 +35,7 @@ describe("addParticipantSchema email", () => {
         name: "A",
         email: "  ",
         votes: [],
+        viewerTimeZone: "UTC",
       }).email,
     ).toBeUndefined();
   });
@@ -45,6 +46,39 @@ describe("addParticipantSchema email", () => {
         pollId: "p",
         name: "A",
         email: "not-an-email",
+        votes: [],
+        viewerTimeZone: "UTC",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("accepts a valid viewer time zone", () => {
+    expect(
+      addParticipantSchema.safeParse({
+        pollId: "p",
+        name: "A",
+        votes: [],
+        viewerTimeZone: "America/Los_Angeles",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects an invalid viewer time zone", () => {
+    expect(
+      addParticipantSchema.safeParse({
+        pollId: "p",
+        name: "A",
+        votes: [],
+        viewerTimeZone: "not-a-time-zone",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("requires a viewer time zone", () => {
+    expect(
+      addParticipantSchema.safeParse({
+        pollId: "p",
+        name: "A",
         votes: [],
       }).success,
     ).toBe(false);

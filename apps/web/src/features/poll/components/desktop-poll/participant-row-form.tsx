@@ -13,8 +13,12 @@ import {
 import { useOptions, usePoll } from "@/features/poll/components/poll-context";
 import { useVotingForm } from "@/features/poll/components/voting-form";
 import { YouAvatar } from "@/features/poll/components/you-avatar";
+import { isPollOptionPast } from "@/features/poll/vote/utils";
 import { Trans, useTranslation } from "@/i18n/client";
-import { getOptionDateTimeLabel } from "@/lib/utils/date-time-utils";
+import {
+  getBrowserTimeZone,
+  getOptionDateTimeLabel,
+} from "@/lib/utils/date-time-utils";
 import { VoteSelector } from "../vote-selector";
 
 export interface ParticipantRowFormProps {
@@ -117,6 +121,10 @@ const ParticipantRowForm = ({
       </td>
       {optionIds.map((optionId, i) => {
         const option = options[i];
+        const pollOption = poll.options[i];
+        const isPast =
+          pollOption !== undefined &&
+          isPollOptionPast(pollOption, getBrowserTimeZone());
         return (
           <td
             key={optionId}
@@ -133,6 +141,7 @@ const ParticipantRowForm = ({
                       option ? getOptionDateTimeLabel(option) : undefined
                     }
                     value={field.value?.type}
+                    disabled={isPast}
                     allowTentativeVotes={poll.allowTentativeVotes}
                     onChange={(vote) => {
                       field.onChange({ optionId, type: vote });

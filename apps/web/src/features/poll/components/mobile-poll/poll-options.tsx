@@ -4,8 +4,12 @@ import { Controller } from "react-hook-form";
 import { useParticipants } from "@/features/poll/client";
 import { usePoll } from "@/features/poll/components/poll-context";
 import { useVotingForm } from "@/features/poll/components/voting-form";
+import { isPollOptionPast } from "@/features/poll/vote/utils";
 import type { ParsedDateTimeOpton } from "@/lib/utils/date-time-utils";
-import { getOptionDateTimeLabel } from "@/lib/utils/date-time-utils";
+import {
+  getBrowserTimeZone,
+  getOptionDateTimeLabel,
+} from "@/lib/utils/date-time-utils";
 import DateOption from "./date-option";
 import TimeSlotOption from "./time-slot-option";
 
@@ -34,6 +38,10 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
       {options.map((option) => {
         const score = getScore(option.optionId);
         const index = optionIds.indexOf(option.optionId);
+        const pollOption = poll.options[index];
+        const isPast =
+          pollOption !== undefined &&
+          isPollOptionPast(pollOption, getBrowserTimeZone());
         return (
           <div key={option.optionId} className="p-2">
             <Controller
@@ -47,7 +55,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                     : field.value[index]?.type;
 
                 const handleChange = (newVote: VoteType) => {
-                  if (!editable) {
+                  if (!editable || isPast) {
                     return;
                   }
                   const newValue = [...field.value];
@@ -73,6 +81,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                         endTime={option.endTime}
                         duration={option.duration}
                         editable={editable}
+                        disabled={isPast}
                         selectedParticipantId={selectedParticipant?.id}
                       />
                     );
@@ -90,6 +99,7 @@ const PollOptions: React.FunctionComponent<PollOptions> = ({
                         day={option.day}
                         month={option.month}
                         editable={editable}
+                        disabled={isPast}
                         selectedParticipantId={selectedParticipant?.id}
                       />
                     );
