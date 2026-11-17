@@ -44,20 +44,19 @@ jobs:
       - name: Pull Rallly image
         run: docker pull ghcr.io/rally-ynov/fork-rallly-m2-devfullstack:main
 
-      - name: Deploy with Docker Compose
+      - name: Deploy Rallly via infrastructure script
         run: |
-          docker compose \
-            --env-file /home/deploy/rallly-prod/.env \
-            -f docker-compose.yml \
-            up -d --no-build
+          cd /home/deploy/rallly-infra-m2-devfullstack
+          git pull --ff-only origin main
+          bash ./start.sh deploy
 
       - name: Verify Rallly health
         run: |
-          echo "Waiting for Rallly to respond..."
+          echo "Waiting for Rallly via Caddy..."
 
           for i in $(seq 1 30); do
             if curl --fail --silent --output /dev/null \
-              http://127.0.0.1:3000; then
+              http://10.2.192.11:8080/login; then
               echo "Rallly is responding successfully!"
               exit 0
             fi
@@ -68,16 +67,15 @@ jobs:
 
           echo "Rallly did not become healthy."
           docker compose \
-            --env-file /home/deploy/rallly-prod/.env \
-            -f docker-compose.yml \
-            ps
+            -f /home/deploy/rallly-infra-m2-devfullstack/compose.yml \
+            ps rallly_selfhosted
           exit 1
 
       - name: Show containers
         run: |
           docker compose \
-            --env-file /home/deploy/rallly-prod/.env \
-            -f docker-compose.yml \
+            --project-directory /home/deploy/rallly-infra-m2-devfullstack \
+            -f /home/deploy/rallly-infra-m2-devfullstack/compose.yml \
             ps
 
       - name: Logout from GHCR
